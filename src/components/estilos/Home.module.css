@@ -1,0 +1,27 @@
+/* Garante que o body e o html ocupem toda a altura da tela */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  
+  /* Container principal para a página */
+  .main-container {
+    display: flex;
+    flex-direction: column; /* Alinha os elementos verticalmente */
+    min-height: 100vh; /* Garante que o container ocupe a altura total da tela */
+  }
+  
+  /* Expande o conteúdo central */
+  .content {
+    flex: 1; /* Faz o conteúdo crescer para ocupar o espaço disponível */
+  }
+  
+  /* Estilização do footer */
+  footer {
+    background-color: #222; /* Apenas para estilização */
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+  }
+  
