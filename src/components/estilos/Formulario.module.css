@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-image: url("/public/assets/backgroun-login.jpg"); /* A imagem está em assets e caminho relativo */
+  background-image: url("/public/assets/backgroun-login.jpg"); 
   background-size: cover;
   background-position: center;
 }
@@ -15,7 +15,7 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   padding: 40px;
   border-radius: 10px;
-  text-shadow: #000 1px 1px; /* Adicionando sombra ao texto */
+  text-shadow: #000 1px 1px; 
 }
 
 .formcontainer h1 {
@@ -106,9 +106,9 @@
   }
 
 .formButtonsContainer {
-  display: flex; /* Torna os elementos filhos (botões) em linha */
-  justify-content: space-between; /* Distribui os botões igualmente */
-  gap: 20px; /* Espaço entre os botões */
+  display: flex; 
+  justify-content: space-between; 
+  gap: 20px; 
   width: 100%;
   text-shadow: none;
 }
@@ -130,7 +130,7 @@
 
 .voltarLink {
   display: inline-block;
-  width: 40%; /* Para ocupar 100% do seu espaço */
+  width: 40%; 
   height: 50px;
   background-color: #fff;
   border: none;
@@ -147,11 +147,12 @@
   margin-top: 10px;
 }
 
-/* Efeito hover para o link "Voltar" */
+
 .voltarLink:hover {
   background-color: #f0f0f0;
   color: #000;
 }
+
 
 
 

@@ -1,7 +1,7 @@
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";  // useNavigate importado corretamente
-import styles from '../estilos/Home.module.css';
+import styles from '../estilos/Formulario.module.css';
 
 const Registro = () => {
     const [name, setName] = useState("");
