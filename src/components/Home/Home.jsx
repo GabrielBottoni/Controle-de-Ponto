@@ -1,14 +1,56 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import styles from "../estilos/Home.module.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Home = () => {
   const [ponto, setPonto] = useState([]);
+  const navigate = useNavigate();
+  const userId = JSON.parse(localStorage.getItem("user"))?.id; // Recupera o ID do usuário logado
 
-  const handleSubmit = (e) => {
+  const fetchPontos = async () => {
+    try {
+      const response = await fetch("/api/pontos"); // Chama o endpoint da API
+      const data = await response.json();
+      setPonto(data[0]?.pontos || []);
+    } catch (error) {
+      console.error("Erro ao buscar pontos:", error);
+      toast.error("Erro ao conectar ao servidor.");
+    }
+  };
+  
+
+  useEffect(() => {
+    if (!userId) {
+      toast.error("Usuário não logado. Redirecionando...");
+      navigate("/");
+      return;
+    }
+
+    // Buscar pontos do usuário no JSON Server
+    const fetchPontos = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/users/${userId}`);
+        if (response.ok) {
+          const user = await response.json();
+          setPonto(user.pontos || []);
+        } else {
+          toast.error("Erro ao carregar pontos.");
+        }
+      } catch (error) {
+        console.error("Erro ao buscar pontos:", error);
+        toast.error("Erro ao conectar ao servidor.");
+      }
+    };
+
+    fetchPontos();
+  }, [userId, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const entrada = document.getElementById("entrada").value;
@@ -16,21 +58,44 @@ const Home = () => {
     const pausa = document.getElementById("pausa").value;
 
     if (!entrada || !saida || !pausa) {
-      alert("Por favor, preencha todos os horários.");
+      toast.error("Por favor, preencha todos os horários.");
       return;
     }
 
-    setPonto((prev) => [
-      ...prev,
-      {
-        data: new Date().toISOString().split("T")[0],
-        entrada,
-        saida,
-        pausa,
-      },
-    ]);
+    const novoPonto = {
+      data: new Date().toISOString().split("T")[0],
+      entrada,
+      saida,
+      pausa,
+    };
 
-    alert("Ponto registrado com sucesso!");
+    try {
+      // Atualizar os pontos no JSON Server
+      const response = await fetch(`http://localhost:3001/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pontos: [...ponto, novoPonto],
+        }),
+      });
+
+      if (response.ok) {
+        setPonto((prev) => [...prev, novoPonto]);
+        toast.success("Ponto registrado com sucesso!");
+      } else {
+        toast.error("Erro ao registrar ponto.");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar o ponto:", error);
+      toast.error("Erro ao conectar ao servidor.");
+    }
+
+    // Limpar campos do formulário
+    document.getElementById("entrada").value = "";
+    document.getElementById("saida").value = "";
+    document.getElementById("pausa").value = "";
   };
 
   const calcularHoras = (entrada, saida, pausa) => {
@@ -50,6 +115,12 @@ const Home = () => {
     return `${horas}h ${minutos}m`;
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("user"); // Remove dados do usuário
+    toast.success("Logout realizado com sucesso!");
+    navigate("/"); // Redireciona para a página de login
+  };
+
   return (
     <div className={styles.mainContainer}>
       {/* Navbar */}
@@ -62,9 +133,9 @@ const Home = () => {
             </div>
             <ul className="nav nav-pills nav-fill">
               <li className="nav-item">
-                <Link to="/" className={styles.voltarLink}>
+                <button onClick={handleLogout} className={styles.voltarLink}>
                   Sair
-                </Link>
+                </button>
               </li>
             </ul>
           </div>
@@ -114,6 +185,7 @@ const Home = () => {
               </button>
             </form>
           </div>
+          <ToastContainer position="top-center" autoClose={3000} />
         </section>
 
         <section>
