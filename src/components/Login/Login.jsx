@@ -10,16 +10,16 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  // Verifica se o usuário já está salvo no Local Storage
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
+    const loggedUser = localStorage.getItem("loggedUser");
+    console.log(loggedUser);
+    if (loggedUser) {
+      const user = JSON.parse(loggedUser);
       navigate("/home", { state: { user } });
     }
   }, [navigate]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!username || !password) {
@@ -28,26 +28,22 @@ const Login = () => {
     }
 
     try {
-      // Atualize a URL para o backend correto em produção
-      const response = await fetch("http://localhost:3001/users");
-      if (!response.ok) {
-        toast.error("Erro ao encontrar usuários.");
-        return;
-      }
 
-      const users = await response.json();
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+
       const user = users.find(
-        (user) => user.email === username && user.password === password
+        (u) => u.email === username && u.password === password
       );
 
       if (user) {
-        localStorage.setItem("user", JSON.stringify(user));
+    
+        localStorage.setItem("loggedUser", JSON.stringify(user));
         navigate("/home", { state: { user } });
       } else {
         toast.error("Email ou senha inválidos!");
       }
     } catch (error) {
-      toast.error("Erro ao conectar ao servidor.");
+      toast.error("Erro ao acessar os dados.");
     }
   };
 

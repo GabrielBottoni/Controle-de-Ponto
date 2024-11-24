@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import styles from "../estilos/Home.module.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,45 +12,19 @@ const Home = () => {
   const navigate = useNavigate();
   const userId = JSON.parse(localStorage.getItem("user"))?.id; // Recupera o ID do usuário logado
 
-  const fetchPontos = async () => {
-    try {
-      const response = await fetch("/api/pontos"); // Chama o endpoint da API
-      const data = await response.json();
-      setPonto(data[0]?.pontos || []);
-    } catch (error) {
-      console.error("Erro ao buscar pontos:", error);
-      toast.error("Erro ao conectar ao servidor.");
-    }
-  };
-  
-
   useEffect(() => {
     if (!userId) {
       toast.error("Usuário não logado. Redirecionando...");
-      navigate("/");
+      navigate("/"); // Redireciona para a página de login
       return;
     }
 
-    // Buscar pontos do usuário no JSON Server
-    const fetchPontos = async () => {
-      try {
-        const response = await fetch(`http://localhost:3001/users/${userId}`);
-        if (response.ok) {
-          const user = await response.json();
-          setPonto(user.pontos || []);
-        } else {
-          toast.error("Erro ao carregar pontos.");
-        }
-      } catch (error) {
-        console.error("Erro ao buscar pontos:", error);
-        toast.error("Erro ao conectar ao servidor.");
-      }
-    };
-
-    fetchPontos();
+    // Carregar pontos armazenados no localStorage para o usuário
+    const pontosSalvos = JSON.parse(localStorage.getItem(`pontos-${userId}`)) || [];
+    setPonto(pontosSalvos);
   }, [userId, navigate]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const entrada = document.getElementById("entrada").value;
@@ -62,6 +36,13 @@ const Home = () => {
       return;
     }
 
+    // Verifica se o usuário está logado
+    if (!userId) {
+      toast.error("Usuário não logado. Redirecionando...");
+      navigate("/"); // Redireciona para a página de login
+      return;
+    }
+
     const novoPonto = {
       data: new Date().toISOString().split("T")[0],
       entrada,
@@ -69,28 +50,15 @@ const Home = () => {
       pausa,
     };
 
-    try {
-      // Atualizar os pontos no JSON Server
-      const response = await fetch(`http://localhost:3001/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          pontos: [...ponto, novoPonto],
-        }),
-      });
+    // Salvar no localStorage
+    const pontosAtuais = JSON.parse(localStorage.getItem(`pontos-${userId}`)) || [];
+    pontosAtuais.push(novoPonto);
+    localStorage.setItem(`pontos-${userId}`, JSON.stringify(pontosAtuais));
 
-      if (response.ok) {
-        setPonto((prev) => [...prev, novoPonto]);
-        toast.success("Ponto registrado com sucesso!");
-      } else {
-        toast.error("Erro ao registrar ponto.");
-      }
-    } catch (error) {
-      console.error("Erro ao salvar o ponto:", error);
-      toast.error("Erro ao conectar ao servidor.");
-    }
+    // Atualiza o estado local
+    setPonto(pontosAtuais);
+
+    toast.success("Ponto registrado com sucesso!");
 
     // Limpar campos do formulário
     document.getElementById("entrada").value = "";
@@ -146,7 +114,7 @@ const Home = () => {
         <section>
           <div className={styles.formcontainer}>
             <form onSubmit={handleSubmit}>
-              <h1>Bem vindo, *nome do usuário aqui*!</h1>
+              <h1>Bem-vindo, {JSON.parse(localStorage.getItem("user"))?.name || "usuário"}!</h1>
               <div className="mb-3">
                 <label htmlFor="entrada" className="form-label">
                   Horário de entrada:
